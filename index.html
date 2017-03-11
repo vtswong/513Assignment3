@@ -1,0 +1,59 @@
+<!--
+	Winter 2017 SENG 513 Assignment 3
+	Vincent Wong 10046391
+	index.html
+-->
+<!doctype html>
+<html>
+  <head> 
+	<link rel="stylesheet" href="http://localhost:3000/style.css">
+	<title>Socket.IO chat</title>
+  </head>
+  <body>
+	<div class="container">
+		<header>Real Time Chat system</header>
+		<ul id="messages"></ul>
+		<ul id="users">
+			<li>Online Users:</li>
+		</ul>
+		<form action="">
+			<input id="m" autocomplete="off" /><button>Send</button>
+		</form>
+	</div>
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+	<script>
+		function updateScroll(){
+			var element = document.getElementById("messages");
+			element.scrollTop = element.scrollHeight;
+		}
+		$(function () {
+			var socket = io();
+			$('form').submit(function(){
+				socket.emit('chat message', $('#m').val());
+				$('#m').val('');
+				return false;
+			});
+			// broadcast message to other clients
+			socket.on('chat message', function(msg){
+				$('#messages').append($('<li>').text(msg));
+				updateScroll();
+			});
+			// broadcast message to sender-client only
+			socket.on('bold message', function(msg){
+				$('#messages').append($('<li>').text(msg));
+				$('#messages li:last-child').css("font-weight", "bold");
+				updateScroll();
+			});
+			// prints user list
+			socket.on('user list', function(msg){
+				$('#users').append($('<li>').text(msg));
+			});
+			// clears user list
+			socket.on('clear list', function(){
+				$('#users').empty();
+			});
+		});
+	</script>
+  </body>
+</html>
